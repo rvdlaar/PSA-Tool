@@ -1,0 +1,11 @@
+{
+  "name": "@psa-tool/rag",
+  "version": "1.0.0",
+  "description": "PSA Tool RAG Pipeline",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests configured\""
+  }
+}

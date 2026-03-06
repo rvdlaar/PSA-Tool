@@ -1,0 +1,26 @@
+{
+  "name": "psa-tool",
+  "version": "1.0.0",
+  "description": "PSA Tool - Professional Services Automation with RAG",
+  "type": "module",
+  "private": true,
+  "workspaces": ["src", "ui", "cli"],
+  "scripts": {
+    "dev": "npm run dev --workspace=src",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspace=src",
+    "dev:ui": "npm run dev --workspace=ui",
+    "dev:cli": "npm run dev --workspace=cli",
+    "test": "npm run test --workspaces",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose build"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.10.0"
+  }
+}

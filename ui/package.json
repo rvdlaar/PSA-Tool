@@ -1,0 +1,11 @@
+{
+  "name": "@psa-tool/ui",
+  "version": "1.0.0",
+  "description": "PSA Tool Web UI",
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"UI dev server placeholder\"",
+    "build": "echo \"UI build placeholder\"",
+    "test": "echo \"No tests configured\""
+  }
+}

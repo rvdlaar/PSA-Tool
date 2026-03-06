@@ -1,0 +1,11 @@
+{
+  "name": "@psa-tool/templates",
+  "version": "1.0.0",
+  "description": "PSA Templates",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests configured\""
+  }
+}
