@@ -1,4 +1,5 @@
-version: '3.8'
+# PSA Tool — OrbStack-compatible Docker Compose
+# Project Start Architecture generator with RAG pipeline
 
 services:
   psa-api:
@@ -7,46 +8,48 @@ services:
       dockerfile: Dockerfile
     container_name: psa-tool-api
     ports:
-      - "8000:8000"
+      - "3001:3000"
     environment:
       - NODE_ENV=production
-      - PORT=8000
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
+      - PORT=3000
+      - AI_API_KEY=${AI_API_KEY:-}
+      - AI_MODEL=${AI_MODEL:-gpt-4o-mini}
+      - AI_BASE_URL=${AI_BASE_URL:-}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-small}
+      - CHROMA_URL=http://chromadb:8000
+      - PSA_API_KEY=${PSA_API_KEY:-}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      - RATE_LIMIT_PER_MINUTE=60
     volumes:
-      - psa_data:/app/data
+      - ./data:/app/data
+    depends_on:
+      chromadb:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
-  # Optional: ChromaDB for RAG
   chromadb:
     image: chromadb/chroma:latest
-    container_name: psa-chromadb
+    container_name: psa-tool-chromadb
     ports:
-      - "8001:8000"
+      - "8003:8000"
     volumes:
-      - chroma_data:/chroma/chroma
+      - chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
     restart: unless-stopped
-
-  # Optional: Ollama for local LLM
-  ollama:
-    image: ollama/ollama:latest
-    container_name: psa-ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 8G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
-  psa_data:
-  chroma_data:
-  ollama_data:
+  chroma-data:

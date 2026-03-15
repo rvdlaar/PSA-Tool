@@ -1,4 +1,8 @@
-// RAG Pipeline - Placeholder for PSA document retrieval and generation
+/**
+ * RAG Pipeline — real implementation backed by ChromaDB.
+ */
+import { getEmbeddingService } from './embeddings.js';
+import { getVectorStore, COLLECTION_PSAS, COLLECTION_DOCS } from './vector-store.js';
 
 export interface Document {
   id: string;
@@ -12,21 +16,50 @@ export interface SearchResult {
 }
 
 export class RAGPipeline {
-  private documents: Document[] = [];
-
-  async addDocument(doc: Document): Promise<void> {
-    this.documents.push(doc);
+  async addDocument(doc: Document, collection = COLLECTION_DOCS): Promise<void> {
+    try {
+      const embedding = await getEmbeddingService().embed(doc.content);
+      const vs = getVectorStore();
+      if (!vs) return;
+      await vs.upsert(collection, doc.id, embedding, doc.content, doc.metadata as Record<string, string>);
+    } catch (e) {
+      console.warn('[RAG] Failed to index document:', (e as Error).message);
+    }
   }
 
-  async search(query: string, limit = 5): Promise<SearchResult[]> {
-    // Placeholder - implement vector search
-    return [];
+  async search(query: string, limit = 5, collection?: string): Promise<SearchResult[]> {
+    try {
+      const embedding = await getEmbeddingService().embed(query);
+      const vs = getVectorStore();
+      if (!vs) return [];
+
+      const collections = collection ? [collection] : [COLLECTION_PSAS, COLLECTION_DOCS];
+      const allHits: Array<{ id: string; document: string; metadata: Record<string, unknown>; score: number }> = [];
+
+      for (const coll of collections) {
+        try {
+          const hits = await vs.search(coll, embedding, limit);
+          allHits.push(...hits);
+        } catch { /* skip */ }
+      }
+
+      allHits.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+      return allHits.slice(0, limit).map(h => ({
+        document: { id: h.id, content: h.document || '', metadata: h.metadata || {} },
+        score: h.score || 0,
+      }));
+    } catch {
+      return [];
+    }
   }
 
-  async generateContext(query: string): Promise<string> {
-    const results = await this.search(query);
-    return results.map(r => r.document.content).join('\n\n');
+  async generateContext(query: string, limit = 5): Promise<string> {
+    const results = await this.search(query, limit);
+    if (results.length === 0) return '';
+    return results.map(r => r.document.content).join('\n\n---\n\n');
   }
 }
 
 export const ragPipeline = new RAGPipeline();
+export { COLLECTION_PSAS, COLLECTION_DOCS };
