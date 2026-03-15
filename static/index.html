@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSA — Project Start Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:oklch(0.985 0.005 80);--bg-warm:oklch(0.97 0.01 75);--surface:oklch(1 0 0);--border:oklch(0.88 0.01 80);--border-light:oklch(0.93 0.008 80);--text:oklch(0.18 0.02 260);--text-2:oklch(0.45 0.01 260);--text-3:oklch(0.62 0.008 260);--accent:oklch(0.35 0.08 260);--accent-bg:oklch(0.95 0.02 260);--red:oklch(0.55 0.2 25);--red-bg:oklch(0.96 0.03 25);--green:oklch(0.45 0.15 155);--green-bg:oklch(0.96 0.03 155);--amber:oklch(0.55 0.15 70);--amber-bg:oklch(0.96 0.04 70);--serif:'Source Serif 4',Georgia,serif;--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;--ease:cubic-bezier(0.16,1,0.3,1)}
+html{font-size:16px;-webkit-font-smoothing:antialiased}body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1rem,4vw,3rem);height:56px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.topbar-brand{font-family:var(--serif);font-size:1.0625rem;font-weight:600;letter-spacing:-0.02em}
+.topbar-nav{display:flex;gap:0}
+.topbar-link{font-size:.8125rem;font-weight:500;padding:1rem 1.125rem;color:var(--text-3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.topbar-link:hover{color:var(--text)}.topbar-link.active{color:var(--text);border-bottom-color:var(--text)}
+.topbar-stats{font-size:.75rem;color:var(--text-3);font-family:var(--mono)}
+.content{max-width:720px;margin:0 auto;padding:2.5rem clamp(1rem,4vw,2rem) 6rem}
+.view{display:none}.view.active{display:block}
+
+.btn{font-family:var(--sans);font-size:.8125rem;font-weight:500;padding:.5rem 1rem;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:all .15s}
+.btn:hover{border-color:var(--text-3)}.btn-dark{background:var(--text);color:var(--bg);border-color:var(--text)}.btn-dark:hover{opacity:.85}
+.btn-sm{padding:.375rem .75rem;font-size:.75rem}.btn-ghost{background:none;border:none;color:var(--text-2);padding:.375rem .5rem}.btn-ghost:hover{color:var(--text)}
+
+.list-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2rem}
+.list-title{font-family:var(--serif);font-size:clamp(1.5rem,4vw,2rem);font-weight:300;letter-spacing:-0.03em}
+.list-filter{width:100%;padding:.625rem 0;background:none;border:none;border-bottom:1px solid var(--border);font-family:var(--sans);font-size:.875rem;color:var(--text);outline:none;margin-bottom:1.5rem;transition:border-color .15s}
+.list-filter:focus{border-bottom-color:var(--text)}.list-filter::placeholder{color:var(--text-3)}
+
+.psa-entry{display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:baseline;padding:.875rem 0;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .1s}
+.psa-entry:hover{background:var(--bg-warm);margin:0 -1rem;padding-left:1rem;padding-right:1rem}
+.entry-title{font-family:var(--serif);font-size:1rem;font-weight:400;line-height:1.4}
+.entry-date{font-size:.6875rem;color:var(--text-3);font-family:var(--mono);white-space:nowrap}
+.empty{padding:4rem 0}.empty h3{font-family:var(--serif);font-size:1.25rem;font-weight:400;margin-bottom:.5rem}.empty p{font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem;line-height:1.6}
+
+.field{margin-bottom:1.25rem}.field label{display:block;font-size:.8125rem;font-weight:500;margin-bottom:.375rem}.field-hint{font-size:.75rem;color:var(--text-3);margin-bottom:.375rem}
+.input,.textarea,.select{width:100%;padding:.625rem 0;background:none;border:none;border-bottom:1px solid var(--border);font-family:var(--sans);font-size:.9375rem;color:var(--text);outline:none;transition:border-color .2s}
+.input:focus,.textarea:focus{border-bottom-color:var(--text)}.input::placeholder,.textarea::placeholder{color:var(--text-3)}
+.textarea{resize:vertical;min-height:80px;line-height:1.6}
+.select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0 center}
+
+.more-toggle{display:inline-flex;align-items:center;gap:.375rem;font-size:.8125rem;color:var(--text-2);cursor:pointer;padding:.5rem 0;margin-bottom:1rem;user-select:none;transition:color .15s}
+.more-toggle:hover{color:var(--text)}.more-toggle svg{width:14px;height:14px;transition:transform .25s var(--ease)}.more-toggle.open svg{transform:rotate(90deg)}
+.expandable{max-height:0;overflow:hidden;transition:max-height .4s var(--ease),opacity .3s;opacity:0}.expandable.open{max-height:3000px;opacity:1}
+
+.list-add{display:flex;gap:.5rem;align-items:flex-end}.list-add .input{flex:1}
+.list-tags{display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.5rem}
+.list-tag{display:inline-flex;align-items:center;gap:.25rem;font-size:.75rem;padding:.25rem .5rem;background:var(--accent-bg);color:var(--text-2)}
+.list-tag button{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.875rem;padding:0}.list-tag button:hover{color:var(--red)}
+.chips{display:flex;flex-wrap:wrap;gap:.375rem}
+.chip{font-size:.75rem;padding:.3rem .625rem;border:1px solid var(--border);color:var(--text-2);cursor:pointer;transition:all .12s;user-select:none}
+.chip:hover{border-color:var(--text-2)}.chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.create-actions{display:flex;gap:.75rem;padding-top:1.5rem;margin-top:1rem;border-top:1px solid var(--border-light)}
+
+.dropzone{border:1.5px dashed var(--border);padding:1.25rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:.75rem;position:relative}
+.dropzone:hover,.dropzone.over{border-color:var(--accent);background:var(--accent-bg)}
+.dropzone-label{font-size:.8125rem;color:var(--text-2)}.dropzone-label strong{color:var(--text);font-weight:500}
+.dropzone-hint{font-size:.6875rem;color:var(--text-3);margin-top:.25rem}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.scan-summary{padding:1rem;background:var(--bg-warm);border:1px solid var(--border-light);margin-top:.75rem}
+.scan-summary h4{font-size:.8125rem;font-weight:600;margin-bottom:.5rem}
+.scan-stats{font-size:.75rem;color:var(--text-2);font-family:var(--mono);margin-bottom:.75rem;line-height:1.6;white-space:pre}
+.scan-actions{display:flex;gap:.5rem;margin-bottom:.75rem}
+.scan-progress{font-size:.75rem;color:var(--text-2);font-style:italic;padding:.5rem 0}
+.file-list{max-height:240px;overflow-y:auto;display:none;flex-direction:column;gap:1px;margin-top:.5rem}.file-list.visible{display:flex}
+.file-item{display:flex;align-items:center;gap:.5rem;padding:.375rem .5rem;font-size:.75rem;background:var(--surface);cursor:pointer;transition:background .1s}
+.file-item:hover{background:var(--bg-warm)}.file-item input[type=checkbox]{accent-color:var(--text);width:14px;height:14px}
+.file-item-name{flex:1;font-family:var(--mono);font-size:.6875rem}.file-item-size{color:var(--text-3);font-family:var(--mono);font-size:.625rem}
+.ingested-files{display:flex;flex-direction:column;gap:.25rem;margin-top:.5rem}
+.ingested-file{display:flex;justify-content:space-between;align-items:center;padding:.375rem .5rem;background:var(--green-bg);font-size:.75rem;color:var(--green)}
+
+.detail-back{font-size:.8125rem;color:var(--text-3);cursor:pointer;margin-bottom:1.5rem;display:inline-block;transition:color .1s}.detail-back:hover{color:var(--text)}
+.detail-title{font-family:var(--serif);font-size:clamp(1.375rem,4vw,1.75rem);font-weight:600;letter-spacing:-0.025em;line-height:1.25;margin-bottom:1rem}
+.detail-meta{display:flex;gap:1.5rem;font-size:.75rem;color:var(--text-3);flex-wrap:wrap;margin-bottom:1.5rem}.detail-meta strong{font-weight:500;color:var(--text-2)}
+
+.banner{padding:.75rem 1rem;margin-bottom:1.5rem;font-size:.8125rem;line-height:1.5;display:flex;gap:.75rem;align-items:flex-start}
+.banner-score{font-family:var(--mono);font-size:1.25rem;font-weight:600;flex-shrink:0}
+.banner-pass{background:var(--green-bg);border-left:3px solid var(--green)}.banner-warn{background:var(--amber-bg);border-left:3px solid var(--amber)}.banner-fail{background:var(--red-bg);border-left:3px solid var(--red)}
+.banner h4{font-size:.8125rem;font-weight:600;margin-bottom:.125rem}.banner p{color:var(--text-2)}
+
+.section-toc{display:flex;gap:.125rem;margin-bottom:2rem;overflow-x:auto;border-bottom:1px solid var(--border-light)}
+.toc-item{font-size:.75rem;font-weight:500;padding:.5rem .75rem;color:var(--text-3);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s}
+.toc-item:hover{color:var(--text)}.toc-item.active{color:var(--text);border-bottom-color:var(--text)}
+.section{margin-bottom:2.5rem;scroll-margin-top:4rem}
+.section-label{font-size:.6875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:.75rem}
+.section-body{font-size:.9375rem;line-height:1.75}
+.section-body[contenteditable]{outline:none;border:1px solid transparent;padding:.75rem;margin:-.75rem;transition:border-color .15s,background .15s;border-radius:2px}
+.section-body[contenteditable]:hover{border-color:var(--border-light)}.section-body[contenteditable]:focus{border-color:var(--accent);background:var(--surface)}
+.section-body ul{padding-left:1.25rem;margin:.5rem 0}.section-body li{margin-bottom:.375rem}.section-body strong{font-weight:600}
+.section-body table{width:100%;border-collapse:collapse;font-size:.8125rem;margin:.75rem 0}
+.section-body th{text-align:left;padding:.5rem .75rem;font-size:.6875rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);border-bottom:2px solid var(--border)}
+.section-body td{padding:.5rem .75rem;border-bottom:1px solid var(--border-light);color:var(--text-2);line-height:1.5;vertical-align:top}
+.edit-hint{font-size:.6875rem;color:var(--text-3);font-style:italic;margin-bottom:1rem}
+.detail-actions{display:flex;gap:.75rem;padding-top:1.5rem;margin-top:2rem;border-top:1px solid var(--border-light)}
+
+.search-input{width:100%;padding:.75rem 0;background:none;border:none;border-bottom:2px solid var(--text);font-family:var(--serif);font-size:1.25rem;color:var(--text);outline:none;margin-bottom:2rem}.search-input::placeholder{color:var(--text-3)}
+.search-hit{padding:.875rem 0;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .1s}
+.search-hit:hover{background:var(--bg-warm);margin:0 -.75rem;padding-left:.75rem;padding-right:.75rem}
+.search-hit h4{font-size:.9375rem;font-weight:500;margin-bottom:.125rem}.search-hit p{font-size:.8125rem;color:var(--text-2);line-height:1.5}
+.search-hit-meta{font-family:var(--mono);font-size:.6875rem;color:var(--text-3);margin-top:.25rem}
+
+.generating{display:none;position:fixed;inset:0;background:oklch(0.985 0.005 80/0.92);z-index:100;justify-content:center;align-items:center;flex-direction:column;gap:1rem;backdrop-filter:blur(4px)}
+.generating.active{display:flex}
+.gen-bar{width:200px;height:2px;background:var(--border);position:relative;overflow:hidden}
+.gen-bar::after{content:'';position:absolute;left:-40%;width:40%;height:100%;background:var(--text);animation:slide 1.2s ease-in-out infinite}
+@keyframes slide{to{left:100%}}
+.gen-label{font-size:.8125rem;color:var(--text-2)}.gen-step{font-family:var(--mono);font-size:.6875rem;color:var(--text-3)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.psa-entry{animation:fadeUp .35s var(--ease) both}.psa-entry:nth-child(2){animation-delay:40ms}.psa-entry:nth-child(3){animation-delay:80ms}.psa-entry:nth-child(4){animation-delay:120ms}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+@media(max-width:640px){.topbar-stats{display:none}.content{padding:1.5rem 1rem 4rem}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-brand">PSA</div>
+  <nav class="topbar-nav">
+    <div class="topbar-link active" onclick="go('list')">Projects</div>
+    <div class="topbar-link" onclick="go('create')">New</div>
+    <div class="topbar-link" onclick="go('search')">Search</div>
+  </nav>
+  <span class="topbar-stats" id="stats"></span>
+</header>
+
+<div class="content">
+  <!-- LIST -->
+  <div class="view active" id="v-list">
+    <div class="list-header">
+      <h1 class="list-title">Project Architectures</h1>
+      <button class="btn btn-dark" onclick="go('create')">New PSA</button>
+    </div>
+    <input class="list-filter" placeholder="Filter..." id="filterInput" oninput="filter()">
+    <div id="psaList"></div>
+  </div>
+
+  <!-- CREATE -->
+  <div class="view" id="v-create">
+    <h2 style="font-family:var(--serif);font-size:clamp(1.25rem,3vw,1.5rem);font-weight:400;margin-bottom:.25rem">What are you building?</h2>
+    <p style="font-size:.875rem;color:var(--text-2);margin-bottom:2rem">Describe the project and we'll generate the architecture blueprint.</p>
+
+    <form id="form" onsubmit="generate(event)">
+      <div class="field"><label>Project name</label><input class="input" name="title" required placeholder="User Authentication Service"></div>
+      <div class="field"><label>What does this project do?</label><div class="field-hint">The problem, scope, and why it matters.</div><textarea class="textarea" name="description" required placeholder="We need a centralized auth service that handles SSO, MFA, and session management for all our internal tools..."></textarea></div>
+      <div class="field"><label>Profile</label><select class="select" name="profile"><option value="detailed">Detailed — metric-driven</option><option value="guided">Guided — with explanatory notes</option></select></div>
+
+      <div class="field">
+        <label>Context sources</label>
+        <div class="field-hint">Point to a folder with existing docs, or paste text directly.</div>
+        <div id="folderSetup"><div class="list-add"><input class="input" id="folderPath" placeholder="/path/to/project/docs"><button type="button" class="btn btn-sm" onclick="scanFolder()">Scan</button></div></div>
+        <div id="folderResults" style="display:none"></div>
+        <div class="ingested-files" id="ingestedFiles"></div>
+        <textarea class="textarea" id="pastedContext" placeholder="Or paste text — requirements docs, meeting notes, Slack threads..." style="min-height:60px;margin-top:.75rem"></textarea>
+      </div>
+
+      <div class="more-toggle" onclick="toggleMore(this,'moreFields')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>Add requirements, constraints, team details</div>
+      <div class="expandable" id="moreFields">
+        <div class="field"><label>Requirements</label><div class="list-add"><input class="input" id="i-req" placeholder="Must support OAuth2 + SAML" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag('req')}"><button type="button" class="btn btn-sm" onclick="addTag('req')">Add</button></div><div class="list-tags" id="t-req"></div></div>
+        <div class="field"><label>Constraints</label><div class="list-add"><input class="input" id="i-con" placeholder="Must deploy on AWS EKS" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag('con')}"><button type="button" class="btn btn-sm" onclick="addTag('con')">Add</button></div><div class="list-tags" id="t-con"></div></div>
+        <div class="field"><label>Tech stack</label><div class="list-add"><input class="input" id="i-tec" placeholder="Node.js, PostgreSQL, Redis" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag('tec')}"><button type="button" class="btn btn-sm" onclick="addTag('tec')">Add</button></div><div class="list-tags" id="t-tec"></div></div>
+        <div class="field"><label>Team size</label><input class="input" name="teamSize" placeholder="3 backend + 1 frontend + 1 DevOps"></div>
+        <div class="field"><label>Timeline</label><input class="input" name="timeline" placeholder="MVP in 8 weeks, production in 12 weeks"></div>
+        <div class="field"><label>Scope boundaries</label><input class="input" name="scope" placeholder="Auth only — does not cover authorization/RBAC"></div>
+        <div class="field"><label>Impacted roles</label><div class="chips"><span class="chip" onclick="this.classList.toggle('on')">Backend</span><span class="chip" onclick="this.classList.toggle('on')">Frontend</span><span class="chip" onclick="this.classList.toggle('on')">DevOps</span><span class="chip" onclick="this.classList.toggle('on')">Security</span><span class="chip" onclick="this.classList.toggle('on')">Data Eng</span><span class="chip" onclick="this.classList.toggle('on')">Product</span><span class="chip" onclick="this.classList.toggle('on')">QA</span></div></div>
+      </div>
+
+      <div class="create-actions"><button type="submit" class="btn btn-dark">Generate PSA</button><button type="button" class="btn" onclick="go('list')">Cancel</button></div>
+    </form>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="view" id="v-detail">
+    <div class="detail-back" onclick="go('list')">&larr; Back</div>
+    <h1 class="detail-title" id="dTitle"></h1>
+    <div class="detail-meta" id="dMeta"></div>
+    <div id="dBanners"></div>
+    <p class="edit-hint" id="dEditHint" style="display:none">Click any section to edit. Accept when you're satisfied.</p>
+    <nav class="section-toc" id="dToc"></nav>
+    <div id="dSections"></div>
+    <div class="detail-actions" id="dActions" style="display:none"><button class="btn btn-dark" onclick="acceptPSA()">Accept this PSA</button><button class="btn" onclick="go('create')">Start over</button></div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="view" id="v-search">
+    <input class="search-input" placeholder="What are you looking for?" id="searchQ" onkeydown="if(event.key==='Enter')doSearch()">
+    <div id="searchResults"></div>
+  </div>
+</div>
+
+<div class="generating" id="genOverlay"><div class="gen-bar"></div><div class="gen-label" id="genLabel">Analyzing context...</div><div class="gen-step" id="genStep">step 1 of 4</div></div>
+
+<script>
+const API='/api';let token='',psas=[];
+const h=()=>{const o={'Content-Type':'application/json'};const k=localStorage.getItem('psa_api_key');if(k)o['X-API-Key']=k;return o};
+
+function go(v){document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));document.getElementById('v-'+v)?.classList.add('active');document.querySelectorAll('.topbar-link').forEach(e=>e.classList.remove('active'));const idx={list:0,create:1,search:2}[v];if(idx!==undefined)document.querySelectorAll('.topbar-link')[idx]?.classList.add('active');if(v==='list')loadList();if(v==='search')document.getElementById('searchQ')?.focus()}
+
+async function loadList(){try{const r=await fetch(`${API}/psa?limit=50`,{headers:h()});const d=await r.json();psas=d.psas||[];render(psas);document.getElementById('stats').textContent=`${d.total||0} projects`}catch{render([])}}
+function render(list){const el=document.getElementById('psaList');if(!list.length){el.innerHTML='<div class="empty"><h3>No project architectures yet</h3><p>A PSA captures the technical blueprint before you start building — scope, architecture, decisions, risks, and timeline.</p><button class="btn btn-dark" onclick="go(\'create\')">Create your first PSA</button></div>';return}
+el.innerHTML=list.map(p=>`<div class="psa-entry" onclick="detail('${p.id}')"><div class="entry-title">${esc(p.title)}</div><div class="entry-date">${fmt(p.created_at)}</div></div>`).join('')}
+function filter(){const q=document.getElementById('filterInput').value.toLowerCase();render(psas.filter(p=>(p.title||'').toLowerCase().includes(q)))}
+
+async function detail(id){try{const p=await fetch(`${API}/psa/${id}`,{headers:h()}).then(r=>r.json());renderDetail(p);go('detail')}catch{}}
+function renderDetail(p,data){document.getElementById('dTitle').textContent=p.title||'';document.getElementById('dMeta').innerHTML=`<span><strong>Created:</strong> ${fmt(p.created_at)}</span>${p.ai_model?`<span><strong>Model:</strong> ${p.ai_model}</span>`:''}`;
+let banners='';if(data?.validation){const v=data.validation;const cls=v.score>=8?'pass':v.score>=6?'warn':'fail';const label=v.score>=8?'High quality':v.score>=6?'Review suggested':'Needs improvement';const sug=v.suggestions?.length?'<br>'+v.suggestions.map(s=>`&middot; ${esc(s)}`).join('<br>'):'';banners+=`<div class="banner banner-${cls}"><div class="banner-score" style="color:var(--${cls==='pass'?'green':cls==='warn'?'amber':'red'})">${v.score}/10</div><div><h4>${label}${v.retried?' (retried)':''}</h4><p>${v.issues?.join('; ')||'No issues.'}${sug}</p></div></div>`}
+document.getElementById('dBanners').innerHTML=banners;
+const editable=!!data;document.getElementById('dEditHint').style.display=editable?'block':'none';document.getElementById('dActions').style.display=editable?'flex':'none';
+const s=p.sections||{};const secs=[{k:'executive_summary',l:'Executive Summary'},{k:'project_scope',l:'Project Scope'},{k:'technical_architecture',l:'Technical Architecture'},{k:'key_decisions',l:'Key Decisions'},{k:'dependencies',l:'Dependencies'},{k:'risks',l:'Risks'},{k:'timeline',l:'Timeline'},{k:'success_criteria',l:'Success Criteria'},{k:'team_impact',l:'Team Impact'}].filter(x=>s[x.k]);
+document.getElementById('dToc').innerHTML=secs.map(x=>`<div class="toc-item" onclick="document.getElementById('s-${x.k}')?.scrollIntoView({behavior:'smooth'});document.querySelectorAll('.toc-item').forEach(e=>e.classList.remove('active'));this.classList.add('active')">${x.l}</div>`).join('');
+document.getElementById('dSections').innerHTML=secs.map(x=>`<div class="section" id="s-${x.k}"><div class="section-label">${x.l}</div><div class="section-body" ${editable?`contenteditable="true" data-key="${x.k}"`:''} >${md(s[x.k])}</div></div>`).join('');
+if(data)window._psa=p}
+
+async function generate(e){e.preventDefault();const f=e.target;const o=document.getElementById('genOverlay');const lb=document.getElementById('genLabel');const st=document.getElementById('genStep');o.classList.add('active');
+const steps=[['Retrieving project context...','step 1 of 4'],['Generating architecture blueprint...','step 2 of 4'],['Validating quality...','step 3 of 4'],['Finalizing...','step 4 of 4']];let si=0;const iv=setInterval(()=>{si++;if(si<steps.length){lb.textContent=steps[si][0];st.textContent=steps[si][1]}},3000);
+const body={title:f.title.value,description:f.description.value,context:[f.querySelector('[name=context]')?.value,document.getElementById('pastedContext')?.value].filter(Boolean).join('\n\n')||undefined,profile:f.profile.value,requirements:tags.req.length?tags.req:undefined,constraints:tags.con.length?tags.con:undefined,techStack:tags.tec.length?tags.tec:undefined,teamSize:f.teamSize?.value||undefined,timeline:f.timeline?.value||undefined,scope:f.scope?.value||undefined,impactedRoles:[...document.querySelectorAll('.chip.on')].map(c=>c.textContent.trim())||undefined};
+Object.keys(body).forEach(k=>{if(!body[k]||(Array.isArray(body[k])&&!body[k].length))delete body[k]});
+try{const r=await fetch(`${API}/psa/generate`,{method:'POST',headers:h(),body:JSON.stringify(body)});const d=await r.json();clearInterval(iv);o.classList.remove('active');if(d.ok&&d.psa){renderDetail(d.psa,d);go('detail');f.reset();Object.keys(tags).forEach(k=>{tags[k]=[];document.getElementById('t-'+k).innerHTML=''});document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'))}else{showMsg(d.error||'Generation failed','fail')}}catch(err){clearInterval(iv);o.classList.remove('active');showMsg(err.message,'fail')}}
+
+function acceptPSA(){if(!window._psa)return;showMsg('PSA accepted and saved.','pass');go('list')}
+async function doSearch(){const q=document.getElementById('searchQ').value;if(!q||q.length<2)return;try{const r=await fetch(`${API}/rag/search?q=${encodeURIComponent(q)}&limit=10`,{headers:h()});const d=await r.json();const el=document.getElementById('searchResults');if(!d.results?.length){el.innerHTML='<div class="empty"><p>No results.</p></div>';return}el.innerHTML=d.results.map(r=>`<div class="search-hit"><h4>${esc(r.document?.metadata?.title||r.document?.id||'')}</h4><p>${esc((r.document?.content||'').slice(0,180))}</p><div class="search-hit-meta">${Math.round((r.score||0)*100)}% match</div></div>`).join('')}catch{}}
+
+// Tags
+const tags={req:[],con:[],tec:[]};
+function addTag(k){const i=document.getElementById('i-'+k);const v=i.value.trim();if(!v)return;tags[k].push(v);i.value='';rTags(k)}
+function rTags(k){document.getElementById('t-'+k).innerHTML=tags[k].map((t,i)=>`<span class="list-tag">${esc(t)}<button onclick="tags['${k}'].splice(${i},1);rTags('${k}')">&times;</button></span>`).join('')}
+
+// Folder scan
+let scannedFiles=[],scannedFolder='';
+async function scanFolder(){const path=document.getElementById('folderPath').value.trim();if(!path)return;const el=document.getElementById('folderResults');el.style.display='block';el.innerHTML='<div class="scan-progress">Scanning...</div>';
+try{const r=await fetch(`${API}/rag/scan`,{method:'POST',headers:h(),body:JSON.stringify({path})});const d=await r.json();if(d.error){el.innerHTML=`<div class="scan-progress" style="color:var(--red)">${esc(d.error)}</div>`;return}if(!d.files?.length){el.innerHTML='<div class="scan-progress">No supported files found.</div>';return}
+scannedFiles=d.files;scannedFolder=d.folder;const ext=Object.entries(d.by_extension).map(([e,n])=>`${String(n).padStart(3)} ${e}`).join('\n');
+el.innerHTML=`<div class="scan-summary"><h4>Found ${d.total} files</h4><pre class="scan-stats">${ext}\n${(d.total_size_kb/1024).toFixed(1)} MB</pre><div class="scan-actions"><button class="btn btn-dark btn-sm" onclick="ingestAll()">Ingest all</button><button class="btn btn-sm" onclick="document.getElementById('fileList')?.classList.toggle('visible')">Let me pick</button></div><div class="file-list" id="fileList">${d.files.map((f,i)=>`<label class="file-item"><input type="checkbox" checked data-idx="${i}"><span class="file-item-name">${esc(f.path)}</span><span class="file-item-size">${(f.size/1024).toFixed(1)}k</span></label>`).join('')}</div></div>`}catch(err){el.innerHTML=`<div class="scan-progress" style="color:var(--red)">Failed: ${esc(err.message)}</div>`}}
+
+async function ingestAll(){const checked=document.querySelectorAll('#fileList input[type=checkbox]:checked');const files=checked.length?[...checked].map(cb=>scannedFiles[cb.dataset.idx].path):scannedFiles.map(f=>f.path);
+const el=document.getElementById('folderResults');el.innerHTML=`<div class="scan-summary"><h4>Ingesting ${files.length} files</h4><div style="background:var(--border-light);height:4px;margin:.75rem 0;position:relative;overflow:hidden"><div id="progressBar" style="position:absolute;left:0;top:0;height:100%;width:0;background:var(--text);transition:width .3s var(--ease)"></div></div><div id="progressLabel" class="scan-progress">Starting...</div><div id="progressFiles" style="max-height:200px;overflow-y:auto;font-size:.6875rem;font-family:var(--mono);margin-top:.5rem"></div></div>`;
+try{const r=await fetch(`${API}/rag/ingest-files`,{method:'POST',headers:h(),body:JSON.stringify({path:scannedFolder,files})});const reader=r.body.getReader();const dec=new TextDecoder();let buf='';const fl=document.getElementById('progressFiles');
+while(true){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();
+for(const line of lines){if(!line.startsWith('data: '))continue;try{const d=JSON.parse(line.slice(6));if(d.status==='complete'){document.getElementById('progressBar').style.width='100%';document.getElementById('progressLabel').textContent=`Done — ${d.ingested} of ${d.total} ingested`;setTimeout(()=>{el.style.display='none';document.getElementById('ingestedFiles').innerHTML=`<div class="ingested-file"><span>${d.ingested} files indexed</span></div>`;showMsg(`${d.ingested} files ingested`,'pass')},800);continue}
+const pct=((d.index+1)/d.total*100).toFixed(0);document.getElementById('progressBar').style.width=pct+'%';const labels={reading:'Reading...',embedding:'Embedding...',done:'Done',error:'Error',skipped:'Skipped'};document.getElementById('progressLabel').textContent=`${d.index+1}/${d.total} — ${labels[d.status]||d.status} ${d.file}`;
+if(d.status==='done'||d.status==='error'||d.status==='skipped'){const icon=d.status==='done'?'\u2713':d.status==='error'?'\u2717':'\u2014';const color=d.status==='done'?'var(--green)':d.status==='error'?'var(--red)':'var(--text-3)';fl.innerHTML+=`<div style="color:${color};padding:.125rem 0">${icon} ${esc(d.file)}${d.error?' — '+esc(d.error):''}</div>`;fl.scrollTop=fl.scrollHeight}}catch{}}}}catch(err){showMsg('Ingestion failed: '+err.message,'fail')}}
+
+// Expand
+function toggleMore(el,id){el.classList.toggle('open');document.getElementById(id).classList.toggle('open')}
+
+// Utils
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+function fmt(d){try{return new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}catch{return d||'—'}}
+function md(t){if(!t)return'';let s=esc(t);s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');s=s.replace(/\*(.+?)\*/g,'<em>$1</em>');s=s.replace(/^### (.+)$/gm,'<h4 style="margin:1rem 0 .25rem;font-weight:600;font-size:.875rem">$1</h4>');s=s.replace(/^- (.+)$/gm,'<li>$1</li>');s=s.replace(/(<li>.*<\/li>)/gs,'<ul>$1</ul>');s=s.replace(/<\/ul>\s*<ul>/g,'');s=s.replace(/\|(.+)\|\n\|[-| ]+\|\n((?:\|.+\|\n?)*)/g,(m,hdr,body)=>{const hs=hdr.split('|').map(h=>h.trim()).filter(Boolean);const rs=body.trim().split('\n').map(l=>l.split('|').map(c=>c.trim()).filter(Boolean));return`<table><thead><tr>${hs.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rs.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`});s=s.replace(/\n/g,'<br>');return s}
+function showMsg(msg,type){const el=document.createElement('div');el.className=`banner banner-${type}`;el.style.cssText='position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:200;max-width:400px;animation:fadeUp .3s var(--ease)';el.innerHTML=`<div><p>${esc(msg)}</p></div>`;document.body.appendChild(el);setTimeout(()=>el.remove(),3000)}
+
+document.addEventListener('keydown',e=>{if(e.metaKey&&e.key==='k'){e.preventDefault();go('search')}if(e.metaKey&&e.key==='n'){e.preventDefault();go('create')}if(e.key==='Escape')go('list')});
+loadList();
+</script>
+</body>
+</html>

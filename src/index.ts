@@ -127,6 +127,29 @@ app.use('/api', ragRouter);
 app.use('/api', psaRouter);
 
 // =============================================================================
+// Static files — serve frontend SPA
+// =============================================================================
+
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
+
+const __dirname2 = dirname(fileURLToPath(import.meta.url));
+const staticDir = join(__dirname2, '..', 'static');
+if (existsSync(staticDir)) {
+  app.use('/static', express.static(staticDir));
+}
+
+app.get('/', (_req: Request, res: Response) => {
+  const indexPath = join(staticDir, 'index.html');
+  if (existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.json({ name: 'PSA Tool API', version: '1.1.0', health: '/health' });
+  }
+});
+
+// =============================================================================
 // Error handler
 // =============================================================================
 
