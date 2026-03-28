@@ -1,6 +1,6 @@
 # PSA Tool
 
-AI-powered Project Start Architecture generator with RAG, quality validation, and structured output.
+AI-powered Project Start Architecture generator with RAG, quality validation, and structured output. Download, double-click, describe your project — AI runs locally, no setup required.
 
 ## What It Does
 
@@ -19,18 +19,37 @@ Feed it your existing docs (point to a folder) and it generates context-aware PS
 
 ## Quick Start
 
+### Option A: Download & Run (Recommended)
+
+No Docker, no terminal, no API keys needed.
+
+1. **Download** the latest release from [Releases](https://github.com/rvdlaar/PSA-Tool/releases)
+2. **Unzip** to any folder
+3. **Double-click** `PSA-Tool.exe` (Windows) or `PSA-Tool` (macOS)
+4. **Browser opens** — describe your project, get a complete architecture blueprint
+
+Everything runs locally. A bundled language model handles generation and quality validation — no cloud services, no API keys, no data leaving your device.
+
+> **Power users:** Want to use your own OpenRouter key, Azure OpenAI, or local Ollama? Configure via **Settings** or set `AI_API_KEY` in `.env`.
+
+### Option B: Docker Compose (Power Users)
+
+Full control over models and providers.
+
 ```bash
 git clone https://github.com/rvdlaar/PSA-Tool.git
 cd PSA-Tool
-
 cp .env.example .env
-# Set AI_API_KEY in .env
-
+# Optionally set AI_API_KEY in .env for your own provider
 docker compose up -d
 # Open http://localhost:3001
 ```
 
 Two services: PSA API (port 3001) + ChromaDB for vector search (port 8003).
+
+### Option C: IT Deployment (Intune/MDM)
+
+Same bundle as Option A, wrapped in MSIX/MSI for managed devices. IT admins can pre-configure by placing a `config.json` in the `data/` folder (e.g., pointing AI at a corporate Azure OpenAI endpoint). Users open the app — no setup required.
 
 ## Using the Frontend
 
